@@ -16,3 +16,5 @@ admin_ipv6_cidrs = ["::/0"]
 
 enable_backups = true
 deploy_username = "deploy"
+app_domain = "fitness.example.com"
+acme_email = "you@example.com"

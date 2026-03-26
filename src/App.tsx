@@ -53,6 +53,18 @@ type PageView = "dashboard" | "log";
 const today = new Date().toISOString().slice(0, 10);
 const currentMonth = today.slice(0, 7);
 
+function createId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 function shiftMonth(monthIso: string, delta: number): string {
   const [year, month] = monthIso.split("-").map(Number);
   const shifted = new Date(year, month - 1 + delta, 1);
@@ -69,7 +81,7 @@ function monthLabel(monthIso: string): string {
 
 function createDraftSet(): DraftSet {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     reps: "10",
     weight: "0"
   };
@@ -77,7 +89,7 @@ function createDraftSet(): DraftSet {
 
 function createDraftExercise(name = ""): DraftExercise {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     name,
     sets: [createDraftSet()]
   };
@@ -353,21 +365,21 @@ export function App() {
           return;
         }
         parsedSets.push({
-          id: crypto.randomUUID(),
+          id: createId(),
           reps,
           weight: setWeight
         });
       }
 
       parsedExercises.push({
-        id: crypto.randomUUID(),
+        id: createId(),
         name,
         sets: parsedSets
       });
     }
 
     const payload: WorkoutSession = {
-      id: crypto.randomUUID(),
+      id: createId(),
       date: sessionDate,
       notes: sessionNotes.trim(),
       exercises: parsedExercises

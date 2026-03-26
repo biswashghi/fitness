@@ -70,3 +70,15 @@ variable "deploy_username" {
   type        = string
   default     = "deploy"
 }
+
+variable "app_domain" {
+  description = "Public domain used by Caddy for HTTPS (e.g. fit.example.com)"
+  type        = string
+  default     = "example.com"
+}
+
+variable "acme_email" {
+  description = "Email used for ACME/Let's Encrypt registration"
+  type        = string
+  default     = "admin@example.com"
+}

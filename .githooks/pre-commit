@@ -1,22 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONFIG_FILE=".gitleaks.toml"
+STAGED_FILES="$(git diff --cached --name-only)"
+STAGED_ADDITIONS="$(git diff --cached -U0 --no-color | grep -E '^\+' | grep -vE '^\+\+\+' || true)"
+
+if [[ -z "$STAGED_FILES" ]]; then
+  exit 0
+fi
+
 if command -v gitleaks >/dev/null 2>&1; then
   echo "Running gitleaks secret scan..."
-  gitleaks protect --staged --redact
+  if [[ -f "$CONFIG_FILE" ]]; then
+    if ! gitleaks protect --staged --redact --config "$CONFIG_FILE"; then
+      echo "Blocked: gitleaks found potential secrets."
+      exit 1
+    fi
+  else
+    if ! gitleaks protect --staged --redact; then
+      echo "Blocked: gitleaks found potential secrets."
+      exit 1
+    fi
+  fi
   exit 0
 fi
 
 echo "gitleaks is not installed. Install it to enable full secret scanning."
 echo "Fallback checks are running..."
 
-if git diff --cached --name-only | grep -Eq '(^|/)terraform\.tfvars$'; then
+if echo "$STAGED_FILES" | grep -Eq '(^|/)terraform\.tfvars$'; then
   echo "Blocked: terraform.tfvars is staged. This file may contain secrets."
   exit 1
 fi
 
-if git diff --cached | grep -Eq 'hcloud_token\s*='; then
-  echo "Blocked: looks like an hcloud token assignment is staged."
+if echo "$STAGED_ADDITIONS" | grep -Eqi '(hcloud_token|HCLOUD_TOKEN|TF_VAR_hcloud_token)\s*[:=]\s*["'\'']?[A-Za-z0-9_-]{20,}'; then
+  echo "Blocked: looks like a Hetzner token assignment is staged."
+  exit 1
+fi
+
+if echo "$STAGED_ADDITIONS" | grep -Eqi 'BW_SESSION\s*[:=]\s*["'\'']?[A-Za-z0-9_-]{20,}'; then
+  echo "Blocked: looks like a Bitwarden session token is staged."
+  exit 1
+fi
+
+if echo "$STAGED_ADDITIONS" | grep -Eqi 'Authorization:\s*Bearer\s+[A-Za-z0-9._-]{20,}'; then
+  echo "Blocked: looks like a bearer token is staged."
   exit 1
 fi
 

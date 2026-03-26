@@ -1,0 +1,26 @@
+title = "fitness-tracker gitleaks config"
+
+[allowlist]
+description = "Allow obvious placeholder/demo values"
+regexes = [
+  '''replace-with-hcloud-token''',
+  '''your_64_char_token''',
+  '''your-key''',
+  '''<redacted>''',
+  '''AAAA\.\.\.''',
+  '''MD\.\.\.''',
+]
+
+[[rules]]
+id = "hcloud-inline-secret"
+description = "Potential Hetzner secret hardcoded in file"
+regex = '''(?i)(hcloud_token|TF_VAR_hcloud_token|HCLOUD_TOKEN)\s*[:=]\s*["']?[A-Za-z0-9_-]{20,}'''
+tags = ["key", "terraform", "hetzner"]
+keywords = ["hcloud_token", "TF_VAR_hcloud_token", "HCLOUD_TOKEN"]
+
+[[rules]]
+id = "bw-session-inline-secret"
+description = "Potential Bitwarden session token hardcoded"
+regex = '''(?i)\bBW_SESSION\b\s*[:=]\s*["']?[A-Za-z0-9_\-]{20,}'''
+tags = ["key", "bitwarden", "session"]
+keywords = ["BW_SESSION"]

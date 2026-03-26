@@ -43,12 +43,26 @@ Open `http://localhost:8787`.
 
 ## Docker Deployment
 
-### Option 1: Docker Compose (recommended)
+### Development Compose
 ```bash
 docker compose up -d --build
 ```
 
-Open `http://localhost:8787`.
+Open:
+- UI: `http://localhost:5173`
+- API: `http://localhost:8787`
+
+### Production Compose (Caddy HTTPS)
+
+```bash
+cat > .env.prod <<'EOF'
+APP_DOMAIN=fitness.example.com
+ACME_EMAIL=you@example.com
+EOF
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+```
+
+Open `https://fitness.example.com`.
 
 ### Docker Compose Watch (live dev)
 ```bash
@@ -89,6 +103,7 @@ Enable the pre-commit hook:
 ```
 
 This hook:
-- runs `gitleaks` (if installed) against staged changes
+- runs `gitleaks` (if installed) against staged changes using [`.gitleaks.toml`](/Users/biswash/Documents/repos/fitness/.gitleaks.toml)
 - blocks commits that stage `terraform.tfvars`
-- blocks commits with staged `hcloud_token = ...` patterns
+- blocks commits with staged `hcloud_token` / `HCLOUD_TOKEN` / `TF_VAR_hcloud_token` assignments
+- blocks staged `BW_SESSION` and inline `Authorization: Bearer ...` patterns (fallback mode)

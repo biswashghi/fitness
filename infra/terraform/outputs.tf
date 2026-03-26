@@ -13,3 +13,15 @@ output "server_ipv6" {
 output "deploy_user" {
   value = var.deploy_username
 }
+
+output "app_domain" {
+  value = var.app_domain
+}
+
+output "app_url" {
+  value = "https://${var.app_domain}"
+}
+
+output "acme_email" {
+  value = var.acme_email
+}
