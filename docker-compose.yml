@@ -1,0 +1,45 @@
+services:
+  fitness-tracker:
+    build:
+      context: .
+      target: development
+    container_name: fitness-tracker
+    command: npm run dev
+    ports:
+      - "5173:5173"
+      - "8787:8787"
+    environment:
+      - PORT=8787
+      - DB_PATH=/data/fitness.db
+    volumes:
+      - fitness-tracker-data:/data
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./public
+          target: /app/public
+        - action: sync
+          path: ./server
+          target: /app/server
+        - action: sync
+          path: ./index.html
+          target: /app/index.html
+        - action: sync
+          path: ./vite.config.ts
+          target: /app/vite.config.ts
+        - action: sync
+          path: ./tsconfig.json
+          target: /app/tsconfig.json
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./package-lock.json
+        - action: rebuild
+          path: ./Dockerfile
+    restart: unless-stopped
+
+volumes:
+  fitness-tracker-data:

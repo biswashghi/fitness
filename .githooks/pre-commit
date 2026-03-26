@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "Running gitleaks secret scan..."
+  gitleaks protect --staged --redact
+  exit 0
+fi
+
+echo "gitleaks is not installed. Install it to enable full secret scanning."
+echo "Fallback checks are running..."
+
+if git diff --cached --name-only | grep -Eq '(^|/)terraform\.tfvars$'; then
+  echo "Blocked: terraform.tfvars is staged. This file may contain secrets."
+  exit 1
+fi
+
+if git diff --cached | grep -Eq 'hcloud_token\s*='; then
+  echo "Blocked: looks like an hcloud token assignment is staged."
+  exit 1
+fi
+
+echo "Pre-commit checks passed (fallback mode)."
