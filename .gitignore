@@ -11,3 +11,5 @@ infra/terraform/terraform.tfvars
 node_modules/*
 .bw-appdata
 dist/*
+playwright-report/
+test-results/

@@ -7,9 +7,9 @@ services:
     command: npm run dev
     ports:
       - "5173:5173"
-      - "8787:8787"
+      - "8788:8788"
     environment:
-      - PORT=8787
+      - PORT=8788
       - DB_PATH=/data/fitness.db
     volumes:
       - fitness-tracker-data:/data

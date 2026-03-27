@@ -1,109 +1,93 @@
-# Fitness Tracker PWA
+# Fitness Tracker
 
-Mobile-first fitness tracker with:
-- Detailed workout sessions (exercise + sets + weight/reps)
-- Compact attendance calendar
-- One-time body metric profile (update only when changed)
-- Backend API with SQLite persistence
-- Docker deployment support
+Mobile-first fitness tracker (PWA UI + Node API + SQLite) with:
+- detailed workouts (exercise/sets/reps/weight)
+- body metric profile
+- Docker production deploy behind Caddy (HTTPS)
+- Hetzner infrastructure via Terraform
 
-## Where Data Is Stored
+## Architecture
 
-Workout and body metric data is now stored in a SQLite database on the backend.
+- Frontend + API served by `server/index.js` on port `8787`
+- SQLite DB at `/data/fitness.db` in container
+- Production reverse proxy: Caddy on `80/443`
 
-- Local run default DB path: `./data/fitness.db`
-- Docker default DB path in container: `/data/fitness.db` (mounted to a named Docker volume)
+## Local Development
 
-## Run Locally
+1. Install deps
 
-1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Start frontend + backend together:
+2. Run app (UI + API)
+
 ```bash
 npm run dev
 ```
 
-3. Open:
-- Web: `http://localhost:5173`
+3. Open
+- UI: `http://localhost:5173`
 - API health: `http://localhost:8787/api/health`
 
-Vite proxies `/api` to the backend in development.
-
-## Production (without Docker)
+## Local Production Build Check
 
 ```bash
 npm run build
 npm start
+curl -f http://localhost:8787/api/health
 ```
 
-Open `http://localhost:8787`.
+## End-to-End UI Tests
 
-## Docker Deployment
-
-### Development Compose
-```bash
-docker compose up -d --build
-```
-
-Open:
-- UI: `http://localhost:5173`
-- API: `http://localhost:8787`
-
-### Production Compose (Caddy HTTPS)
+Install Playwright browser once:
 
 ```bash
-cat > .env.prod <<'EOF'
-APP_DOMAIN=fitness.example.com
-ACME_EMAIL=you@example.com
-EOF
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+npm run test:e2e:install
 ```
 
-Open `https://fitness.example.com`.
+Run headless E2E tests:
 
-### Docker Compose Watch (live dev)
 ```bash
-docker compose watch
+npm run test:e2e
 ```
 
-Then open:
-- PWA dev app: `http://localhost:5173`
-- API health: `http://localhost:8787/api/health`
+## Hetzner Production Deployment (Terraform + Docker + DNS)
 
-### Option 2: Docker CLI
+Start deployment from:
+- [/Users/biswash/Documents/repos/hetzner_tf/README.md](/Users/biswash/Documents/repos/hetzner_tf/README.md)
+
+Come back here for Fitness-specific runtime and operational notes.
+
+## Operational Notes
+
+- Terraform firewall is production-oriented (`22/80/443`).
+- Direct access to `:5173/:8787` is for temporary debugging only.
+- If system says `*** System restart required ***`, reboot after deployment:
+
 ```bash
-docker build -t fitness-tracker:local .
-docker run --rm -d --name fitness-tracker -p 8787:8787 -v fitness-tracker-data:/data fitness-tracker:local
+ssh deploy@<SERVER_IPV4>
+sudo reboot
 ```
 
-## iPhone Usage
+## Secret Handling
 
-1. Open the deployed URL in Safari (for local network dev, use your machine IP + port).
-2. Tap Share.
-3. Tap **Add to Home Screen**.
-
-## API Summary
-
-- `GET /api/health`
-- `GET /api/workout-sessions`
-- `POST /api/workout-sessions`
-- `GET /api/body-metric`
-- `PUT /api/body-metric`
-- `GET /api/exercise-library`
-
-## Secret Protection (Git Hook)
-
-Enable the pre-commit hook:
+- Hetzner token is fetched from Bitwarden only when needed (`hetzner_tf/scripts/tf-hcloud.sh`).
+- Enable pre-commit secret checks:
 
 ```bash
 ./scripts/install-git-hooks.sh
 ```
 
-This hook:
-- runs `gitleaks` (if installed) against staged changes using [`.gitleaks.toml`](/Users/biswash/Documents/repos/fitness/.gitleaks.toml)
-- blocks commits that stage `terraform.tfvars`
-- blocks commits with staged `hcloud_token` / `HCLOUD_TOKEN` / `TF_VAR_hcloud_token` assignments
-- blocks staged `BW_SESSION` and inline `Authorization: Bearer ...` patterns (fallback mode)
+Hook + gitleaks config will block common hardcoded token/session patterns.
+
+## Useful Scripts
+
+- Hetzner deploy: [`scripts/deploy-hetzner.sh`](/Users/biswash/Documents/repos/fitness/scripts/deploy-hetzner.sh)
+- Hetzner deploy from Terraform outputs: [`hetzner_tf/scripts/deploy-hetzner-prod-from-tf.sh`](/Users/biswash/Documents/repos/hetzner_tf/scripts/deploy-hetzner-prod-from-tf.sh)
+- Terraform wrapper: [`hetzner_tf/scripts/tf-hcloud.sh`](/Users/biswash/Documents/repos/hetzner_tf/scripts/tf-hcloud.sh)
+
+## Reusable Deployment Template
+
+- Hetzner + Terraform + DNS template writeup:
+  [/Users/biswash/Documents/repos/hetzner_tf/shared/HETZNER_TERRAFORM_DNS_TEMPLATE.md](/Users/biswash/Documents/repos/hetzner_tf/shared/HETZNER_TERRAFORM_DNS_TEMPLATE.md)

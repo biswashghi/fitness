@@ -12,9 +12,6 @@ REPO_URL="$3"
 BRANCH="${4:-main}"
 APP_DIR="/opt/fitness-tracker"
 REPO_HOST=""
-SERVER_ENV_FILE="/etc/fitness-tracker/app.env"
-LOCAL_APP_DOMAIN="${APP_DOMAIN:-}"
-LOCAL_ACME_EMAIL="${ACME_EMAIL:-}"
 
 if [[ "$REPO_URL" == git@*:* ]]; then
   REPO_HOST="${REPO_URL#git@}"
@@ -65,25 +62,10 @@ else
 fi
 
 cd "${APP_DIR}"
-if [[ -n "${LOCAL_APP_DOMAIN}" ]]; then
-  {
-    echo "APP_DOMAIN=${LOCAL_APP_DOMAIN}"
-    echo "ACME_EMAIL=${LOCAL_ACME_EMAIL}"
-  } | sudo tee "${SERVER_ENV_FILE}" >/dev/null
-fi
-
-if [[ -f "${SERVER_ENV_FILE}" ]]; then
-  sudo cp "${SERVER_ENV_FILE}" "${APP_DIR}/.env.prod"
-  sudo chown "${DEPLOY_USER}:${DEPLOY_USER}" "${APP_DIR}/.env.prod"
-fi
 
 if [[ -f "${APP_DIR}/docker-compose.prod.yml" ]]; then
-  if [[ ! -f "${APP_DIR}/.env.prod" ]]; then
-    echo "Missing ${APP_DIR}/.env.prod (expected Terraform to create ${SERVER_ENV_FILE})."
-    exit 1
-  fi
-  sudo docker compose --env-file "${APP_DIR}/.env.prod" -f "${APP_DIR}/docker-compose.prod.yml" up -d --build
-  sudo docker compose --env-file "${APP_DIR}/.env.prod" -f "${APP_DIR}/docker-compose.prod.yml" ps
+  sudo docker compose -f "${APP_DIR}/docker-compose.prod.yml" up -d --build
+  sudo docker compose -f "${APP_DIR}/docker-compose.prod.yml" ps
 else
   sudo docker compose up -d --build
   sudo docker compose ps
