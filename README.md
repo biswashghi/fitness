@@ -55,7 +55,7 @@ npm run test:e2e
 ## Hetzner Production Deployment (Terraform + Docker + DNS)
 
 Start deployment from:
-- [/Users/biswash/Documents/repos/hetzner_tf/README.md](/Users/biswash/Documents/repos/hetzner_tf/README.md)
+- [Hetzner deployment runbook](https://github.com/biswashghi/hetzner_tf/blob/main/README.md)
 
 Come back here for Fitness-specific runtime and operational notes.
 
