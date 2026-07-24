@@ -4,7 +4,7 @@ Mobile-first fitness tracker (PWA UI + Node API + SQLite) with:
 - detailed workouts (exercise/sets/reps/weight)
 - body metric profile
 - Docker production deploy behind Caddy (HTTPS)
-- Hetzner infrastructure via Terraform
+- VPS production deploy behind Terraform-managed infrastructure
 
 ## Architecture
 
@@ -52,10 +52,10 @@ Run headless E2E tests:
 npm run test:e2e
 ```
 
-## Hetzner Production Deployment (Terraform + Docker + DNS)
+## VPS Production Deployment (Terraform + Docker + DNS)
 
 Start deployment from:
-- [Hetzner deployment runbook](https://github.com/biswashghi/hetzner_tf/blob/main/README.md)
+- [VPS deployment runbook](https://github.com/biswashghi/hetzner_tf/blob/main/README.md)
 
 Come back here for Fitness-specific runtime and operational notes.
 
@@ -72,7 +72,7 @@ sudo reboot
 
 ## Secret Handling
 
-- Hetzner token is fetched from Bitwarden only when needed (`hetzner_tf/scripts/tf-hcloud.sh`).
+- Hetzner token is fetched from Bitwarden only when provisioning Hetzner infrastructure (`hetzner_tf/scripts/tf-hcloud.sh`).
 - Enable pre-commit secret checks:
 
 ```bash
@@ -83,8 +83,9 @@ Hook + gitleaks config will block common hardcoded token/session patterns.
 
 ## Useful Scripts
 
-- Hetzner deploy: [`scripts/deploy-hetzner.sh`](/Users/biswash/Documents/repos/fitness/scripts/deploy-hetzner.sh)
-- Hetzner deploy from Terraform outputs: [`hetzner_tf/scripts/deploy-hetzner-prod-from-tf.sh`](/Users/biswash/Documents/repos/hetzner_tf/scripts/deploy-hetzner-prod-from-tf.sh)
+- VPS deploy: [`scripts/deploy-vps.sh`](/Users/biswash/Documents/repos/fitness/scripts/deploy-vps.sh)
+- VPS deploy from Terraform outputs: [`hetzner_tf/scripts/deploy-vps-prod-from-tf.sh`](/Users/biswash/Documents/repos/hetzner_tf/scripts/deploy-vps-prod-from-tf.sh)
+- Hetzner deploy compatibility wrapper from Terraform outputs: [`hetzner_tf/scripts/deploy-hetzner-prod-from-tf.sh`](/Users/biswash/Documents/repos/hetzner_tf/scripts/deploy-hetzner-prod-from-tf.sh)
 - Terraform wrapper: [`hetzner_tf/scripts/tf-hcloud.sh`](/Users/biswash/Documents/repos/hetzner_tf/scripts/tf-hcloud.sh)
 
 ## Reusable Deployment Template
